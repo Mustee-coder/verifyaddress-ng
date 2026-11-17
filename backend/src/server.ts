@@ -1,20 +1,25 @@
-
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import dotenv from "dotenv";
-
-dotenv.config();
+import { env } from "./config/env.js";
+import { connectDatabase } from "./config/database.js";
+import { errorHandler } from "./middleware/error.middleware.js";
+import { notFoundHandler } from "./middleware/notFound.middleware.js";
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(helmet());
-app.use(cors());
+
+app.use(
+  cors({
+    origin: env.CLIENT_URL,
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
-// Health check route
+// Health check
 app.get("/api/health", (_req, res) => {
   res.status(200).json({
     success: true,
@@ -23,7 +28,22 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`VerifyAddress NG API running on port ${PORT}`);
-});
+// Error handling
+app.use(notFoundHandler);
+app.use(errorHandler);
+
+async function startServer(): Promise<void> {
+  try {
+    await connectDatabase();
+
+    app.listen(env.PORT, () => {
+      console.log(`VerifyAddress NG API running on port ${env.PORT}`);
+      console.log(`Environment: ${env.NODE_ENV}`);
+    });
+  } catch (error) {
+    console.error("Application startup failed:", error);
+    process.exit(1);
+  }
+}
+
+startServer();

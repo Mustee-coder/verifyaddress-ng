@@ -1,18 +1,7 @@
-import { useEffect, useState } from "react";
-import { checkBackend } from "./services/api";
+import { useHealthCheck } from "./features/health/health.api";
 
 function App() {
-  const [status, setStatus] = useState("Checking backend...");
-
-  useEffect(() => {
-    checkBackend()
-      .then(() => {
-        setStatus("Backend connected successfully!");
-      })
-      .catch(() => {
-        setStatus("Backend connection failed.");
-      });
-  }, []);
+  const { data, isPending, isError } = useHealthCheck();
 
   return (
     <main>
@@ -20,7 +9,10 @@ function App() {
       <p>Verify. Trust. Connect.</p>
 
       <h2>Backend Status</h2>
-      <p>{status}</p>
+
+      {isPending && <p>Checking backend...</p>}
+      {isError && <p>Backend connection failed.</p>}
+      {data && <p>{data.message}</p>}
     </main>
   );
 }
