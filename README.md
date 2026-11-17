@@ -93,6 +93,12 @@ VITE_API_BASE_URL=http://localhost:5000
 
 **Security:** Never expose your NIPOST API secret key in frontend code or commit private environment files to GitHub.
 
+### Email verification delivery
+
+In development, Brevo settings may be left blank. In production, configure all three backend values: `BREVO_API_KEY`, `BREVO_SENDER_EMAIL`, and `BREVO_SENDER_NAME`. Delivery status is recorded in safe server logs as provider acceptance, not proof that a message reached the inbox.
+
+If the initial verification email does not arrive, request another with `POST /api/auth/resend-verification` and a JSON body containing the account email. Each resend replaces the previous token and starts the configured account cooldown (`EMAIL_VERIFICATION_RESEND_COOLDOWN_SECONDS`, default 120 seconds). If a resend delivery fails, wait for that cooldown and request another resend. The application stores only the token hash; it cannot recover or replay a raw token from a failed attempt.
+
 ## Project Vision
 
 To make digital address verification more accessible, reliable and useful across Nigeria.
